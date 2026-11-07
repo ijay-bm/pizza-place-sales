@@ -1,0 +1,50 @@
+@import 'tailwindcss';
+
+/* Dark mode follows the `dark` class VueUse's useDark() puts on <html>, not the system setting alone. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  /* Tailwind v4 leaves buttons on the default cursor; its upgrade guide gives this to restore the pointer. */
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+
+  html {
+    @apply bg-zinc-50 text-zinc-900 antialiased dark:bg-zinc-950 dark:text-zinc-100;
+  }
+}
+
+/* Vue's <Transition name="fade">, between routes. */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 150ms ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* Vue's <Transition name="reveal">, for a message that appears under a field. */
+.reveal-enter-active,
+.reveal-leave-active {
+  transition:
+    opacity 150ms ease,
+    transform 150ms ease;
+}
+
+.reveal-enter-from,
+.reveal-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-enter-active,
+  .fade-leave-active,
+  .reveal-enter-active,
+  .reveal-leave-active {
+    transition: none;
+  }
+}

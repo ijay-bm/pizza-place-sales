@@ -21,7 +21,7 @@
       }
     },
     {
-      "files": ["*.js", "*.ts", "*.mjs"],
+      "files": ["*.js", "*.ts", "*.mjs", "*.css"],
       "options": {
         "tabWidth": 2,
         "singleQuote": true,
