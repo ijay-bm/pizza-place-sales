@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
@@ -23,6 +24,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Outside production, a lazy-loaded relation, a missing attribute or an unfillable one throws instead of passing silently.
+        Model::shouldBeStrict(! $this->app->isProduction());
+
         // Five attempts a minute for one email from one address, so guessing a password is slow.
         RateLimiter::for('login', function (Request $request): Limit {
             return Limit::perMinute(5)->by(Str::lower((string) $request->input('email')) . '|' . $request->ip());
