@@ -1,0 +1,26 @@
+# Environment files hold secrets and per-machine values; each has a committed .example beside it.
+.env
+.env.backup
+.env.production
+
+# Dependencies and build output
+node_modules/
+/apps/*/dist
+/apps/api/vendor
+/apps/api/public/build
+/apps/api/public/hot
+/apps/api/public/storage
+/apps/api/storage/*.key
+/apps/api/storage/pail
+/apps/api/.phpunit.cache
+.phpunit.result.cache
+
+# Editors and operating systems
+/.fleet
+/.idea
+/.nova
+/.vscode
+/.zed
+.DS_Store
+Thumbs.db
+*.log
