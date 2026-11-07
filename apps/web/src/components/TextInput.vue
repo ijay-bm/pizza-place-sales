@@ -3,7 +3,7 @@ const model = defineModel<string>({ required: true });
 
 defineProps<{
   id: string;
-  type?: 'text' | 'email' | 'password';
+  type?: 'text' | 'email' | 'password' | 'search' | 'date';
   invalid?: boolean;
 }>();
 </script>

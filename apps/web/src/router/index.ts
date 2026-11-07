@@ -29,6 +29,16 @@ const router = createRouter({
           component: () => import('@/views/DashboardView.vue')
         },
         {
+          path: 'orders',
+          name: 'orders.index',
+          component: () => import('@/views/OrdersView.vue')
+        },
+        {
+          path: 'orders/:orderId(\\d+)',
+          name: 'orders.show',
+          component: () => import('@/views/OrderView.vue')
+        },
+        {
           path: 'import',
           name: 'imports.create',
           component: () => import('@/views/ImportView.vue')
