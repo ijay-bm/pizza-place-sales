@@ -64,6 +64,15 @@ class IndexTest extends ApiTestCase
         $this->assertSame([1], $this->ids($this->list(['filter' => ['pizza_type' => 'hawaiian']])));
     }
 
+    public function test_pizza_filters_together_describe_one_pizza(): void
+    {
+        // Order 2 holds a medium classic and large pizzas of other categories: a large classic is in neither order.
+        $this->assertSame([], $this->ids($this->list(['filter' => ['size' => 'L', 'category' => 'classic']])));
+        $this->assertSame([2, 1], $this->ids($this->list(['filter' => ['size' => 'M', 'category' => 'classic']])));
+        $this->assertSame([2], $this->ids($this->list(['filter' => ['search' => 'mushrooms', 'size' => 'M']])));
+        $this->assertSame([], $this->ids($this->list(['filter' => ['search' => 'mushrooms', 'size' => 'L']])));
+    }
+
     public function test_a_search_matches_an_order_number_a_pizza_name_or_an_ingredient(): void
     {
         $this->assertSame([17], $this->ids($this->list(['filter' => ['search' => '17']])));
