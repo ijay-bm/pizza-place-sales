@@ -36,6 +36,10 @@ demo seeder creates that account.
   `docker compose -f docker-compose.local.yml logs -f node` shows when Vite is
   ready.
 
+The API's documentation, generated from the code by Scramble, is at
+<http://localhost:8080/docs/api> while the app runs locally. Requests sent from it
+use the session of the dashboard open in the same browser.
+
 | Service | What it runs |
 |---|---|
 | `nginx` | the only published port: `/api` and `/sanctum` go to PHP, everything else to Vite |
