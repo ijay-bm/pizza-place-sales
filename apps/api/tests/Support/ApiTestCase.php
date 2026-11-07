@@ -2,6 +2,7 @@
 
 namespace Tests\Support;
 
+use App\Imports\SalesDataImporter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -19,5 +20,19 @@ abstract class ApiTestCase extends TestCase
     protected function fromTheSpa(): static
     {
         return $this->withHeader('Origin', config('app.url'));
+    }
+
+    /**
+     * Imports tests/Fixtures/imports/valid: orders 1, 2, 3 and 17, their ten lines, and the ten pizza types and
+     * thirty pizzas those lines name.
+     */
+    protected function importSalesFixtures(): void
+    {
+        app(SalesDataImporter::class)->import(
+            pizzaTypesPath: base_path('tests/Fixtures/imports/valid/pizza_types.csv'),
+            pizzasPath: base_path('tests/Fixtures/imports/valid/pizzas.csv'),
+            ordersPath: base_path('tests/Fixtures/imports/valid/orders.csv'),
+            orderDetailsPath: base_path('tests/Fixtures/imports/valid/order_details.csv'),
+        );
     }
 }
