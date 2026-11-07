@@ -47,3 +47,17 @@ Tests run against `mysql-test`:
 ```bash
 docker compose -f docker-compose.local.yml exec -u app php php artisan test
 ```
+
+## Formatting
+
+Prettier formats the TypeScript, Vue and CSS, and the PHP through
+`@prettier/plugin-php`; Pint runs after it on the PHP and has the last word,
+so the PHP follows Laravel's style. Run both, in this order:
+
+```bash
+docker compose -f docker-compose.local.yml exec node npm run format
+docker compose -f docker-compose.local.yml exec -u app php vendor/bin/pint
+```
+
+The checks are `npm run format:check` for the front end and
+`vendor/bin/pint --test` for the PHP.

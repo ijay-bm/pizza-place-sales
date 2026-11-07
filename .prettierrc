@@ -1,0 +1,66 @@
+{
+  "phpVersion": "8.5",
+  "tabWidth": 4,
+  "useTabs": false,
+  "singleQuote": true,
+  "braceStyle": "per-cs",
+  "bracketSameLine": false,
+  "plugins": ["@prettier/plugin-php"],
+  "printWidth": 120,
+  "overrides": [
+    {
+      "files": "**/{routes,Routes}/*api*.php",
+      "options": {
+        "printWidth": 150
+      }
+    },
+    {
+      "files": ".prettierrc",
+      "options": {
+        "tabWidth": 2
+      }
+    },
+    {
+      "files": ["*.js", "*.ts", "*.mjs"],
+      "options": {
+        "tabWidth": 2,
+        "singleQuote": true,
+        "useTabs": false,
+        "trailingComma": "none",
+        "arrowParens": "always",
+        "printWidth": 100,
+        "bracketSameLine": false,
+        "htmlWhitespaceSensitivity": "ignore",
+        "endOfLine": "auto"
+      }
+    },
+    {
+      "files": "*.vue",
+      "options": {
+        "tabWidth": 2,
+        "singleQuote": true,
+        "useTabs": false,
+        "trailingComma": "none",
+        "arrowParens": "always",
+        "printWidth": 100,
+        "bracketSameLine": false,
+        "htmlWhitespaceSensitivity": "ignore",
+        "endOfLine": "auto"
+      }
+    },
+    {
+      "files": "*.md",
+      "options": {
+        "tabWidth": 2
+      }
+    },
+    {
+      "files": ["*.json", "*.yml", "*.yaml"],
+      "options": {
+        "tabWidth": 2
+      }
+    }
+  ],
+  "trailingComma": "all",
+  "trailingCommaPHP": true
+}

@@ -10,6 +10,11 @@
     "build": "npm run build -w @pizza-place-sales/web",
     "type-check": "npm run type-check -w @pizza-place-sales/web",
     "lint": "npm run lint -w @pizza-place-sales/web",
-    "format": "npm run format -w @pizza-place-sales/web"
+    "format": "prettier --write \"apps/web/src/**/*.{ts,vue,css}\" \"apps/web/*.ts\" \"apps/api/{app,bootstrap,config,database,public,routes,tests}/**/*.php\"",
+    "format:check": "prettier --check \"apps/web/src/**/*.{ts,vue,css}\" \"apps/web/*.ts\""
+  },
+  "devDependencies": {
+    "@prettier/plugin-php": "0.26.0",
+    "prettier": "3.9.6"
   }
 }
