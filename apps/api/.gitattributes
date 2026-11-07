@@ -1,5 +1,8 @@
 * text=auto eol=lf
 
+# The CSV files are kept byte for byte as the dataset publishes them: CRLF line endings, and Windows-1252 in pizza_types.csv.
+*.csv -text
+
 *.blade.php diff=html
 *.css diff=css
 *.html diff=html
