@@ -1,4 +1,9 @@
 @import 'tailwindcss';
+@import '@fontsource-variable/inter';
+
+@theme {
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+}
 
 /* Dark mode follows the `dark` class VueUse's useDark() puts on <html>, not the system setting alone. */
 @custom-variant dark (&:where(.dark, .dark *));
@@ -11,7 +16,7 @@
   }
 
   html {
-    @apply bg-zinc-50 text-zinc-900 antialiased dark:bg-zinc-950 dark:text-zinc-100;
+    @apply bg-zinc-50 text-zinc-900 tabular-nums antialiased dark:bg-zinc-950 dark:text-zinc-100;
   }
 }
 
