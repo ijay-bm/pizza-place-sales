@@ -1,0 +1,15 @@
+{
+  "name": "pizza-place-sales",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/web"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @pizza-place-sales/web",
+    "build": "npm run build -w @pizza-place-sales/web",
+    "type-check": "npm run type-check -w @pizza-place-sales/web",
+    "lint": "npm run lint -w @pizza-place-sales/web",
+    "format": "npm run format -w @pizza-place-sales/web"
+  }
+}
