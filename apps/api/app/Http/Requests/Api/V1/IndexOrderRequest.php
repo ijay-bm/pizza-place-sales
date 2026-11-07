@@ -24,6 +24,8 @@ class IndexOrderRequest extends FormRequest
             'filter.search' => ['sometimes', 'string', 'max:100'],
             // OrderQuery's allowedIncludes() refuses any other value with a 400, so the list is not repeated here.
             'include' => ['sometimes', 'string'],
+            // OrderQuery's allowedSorts() refuses any other value with a 400, so the list is not repeated here.
+            'sort' => ['sometimes', 'string'],
             'per_page' => ['sometimes', 'integer', 'min:1', 'max:100'],
             'page' => ['sometimes', 'integer', 'min:1'],
         ];
