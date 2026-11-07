@@ -18,11 +18,14 @@ cp .env.example .env
 cp apps/api/.env.example apps/api/.env
 docker compose -f docker-compose.local.yml up -d --build
 docker compose -f docker-compose.local.yml exec -u app php php artisan key:generate
-docker compose -f docker-compose.local.yml exec -u app php php artisan migrate
+docker compose -f docker-compose.local.yml exec -u app php php artisan migrate --seed --seeder="Database\Seeders\Local\DemoSeeder"
 ```
 
 The application is then at <http://localhost:8080>, and the API's health check
 at <http://localhost:8080/api/up>.
+
+Log in as `demo@pizza-place-sales.test` with the password `password`; the local
+demo seeder creates that account.
 
 - The root `.env` is read by Docker Compose alone: the host ports and the
   database account. Its `DB_*` values must equal the `DB_*` lines in
