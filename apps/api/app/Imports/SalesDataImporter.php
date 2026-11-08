@@ -112,8 +112,18 @@ class SalesDataImporter
     private function importPizzaTypes(CsvFile $pizzaTypesFile): array
     {
         $pizzaTypes = [];
+        $lineByCode = [];
 
         foreach ($pizzaTypesFile->rows() as $line => $row) {
+            if (isset($lineByCode[$row['pizza_type_id']])) {
+                throw $pizzaTypesFile->invalid(
+                    $line,
+                    "the pizza type {$row['pizza_type_id']} is already on line {$lineByCode[$row['pizza_type_id']]}.",
+                );
+            }
+
+            $lineByCode[$row['pizza_type_id']] = $line;
+
             $category =
                 PizzaCategory::tryFrom(strtolower($row['category'])) ??
                 throw $pizzaTypesFile->invalid(
@@ -138,8 +148,15 @@ class SalesDataImporter
     {
         $ingredientNamesByCode = [];
 
-        foreach ($pizzaTypesFile->rows() as $row) {
-            $ingredientNamesByCode[$row['pizza_type_id']] = array_map(trim(...), explode(',', $row['ingredients']));
+        foreach ($pizzaTypesFile->rows() as $line => $row) {
+            $ingredientNamesOfPizzaType = array_map(trim(...), explode(',', $row['ingredients']));
+            $repeatedNames = array_diff_assoc($ingredientNamesOfPizzaType, array_unique($ingredientNamesOfPizzaType));
+
+            if ($repeatedNames !== []) {
+                throw $pizzaTypesFile->invalid($line, 'the ingredient ' . reset($repeatedNames) . ' is listed twice.');
+            }
+
+            $ingredientNamesByCode[$row['pizza_type_id']] = $ingredientNamesOfPizzaType;
         }
 
         $ingredientNames = collect($ingredientNamesByCode)->flatten()->unique()->values()->all();
@@ -165,8 +182,19 @@ class SalesDataImporter
     private function importPizzas(CsvFile $pizzasFile, array $pizzaTypeIdByCode): array
     {
         $pizzas = [];
+        $lineByCode = [];
+        $lineByPizzaTypeAndSize = [];
 
         foreach ($pizzasFile->rows() as $line => $row) {
+            if (isset($lineByCode[$row['pizza_id']])) {
+                throw $pizzasFile->invalid(
+                    $line,
+                    "the pizza {$row['pizza_id']} is already on line {$lineByCode[$row['pizza_id']]}.",
+                );
+            }
+
+            $lineByCode[$row['pizza_id']] = $line;
+
             $pizzaTypeId =
                 $pizzaTypeIdByCode[$row['pizza_type_id']] ??
                 throw $pizzasFile->invalid($line, "the pizza type {$row['pizza_type_id']} is not in pizza_types.csv.");
@@ -178,6 +206,17 @@ class SalesDataImporter
                         implode(', ', array_column(PizzaSize::cases(), 'value')) .
                         '.',
                 );
+
+            $pizzaTypeAndSize = "{$row['pizza_type_id']} in size {$size->value}";
+
+            if (isset($lineByPizzaTypeAndSize[$pizzaTypeAndSize])) {
+                throw $pizzasFile->invalid(
+                    $line,
+                    "the pizza type {$pizzaTypeAndSize} is already on line {$lineByPizzaTypeAndSize[$pizzaTypeAndSize]}.",
+                );
+            }
+
+            $lineByPizzaTypeAndSize[$pizzaTypeAndSize] = $line;
 
             if (! is_numeric($row['price']) || (float) $row['price'] < 0) {
                 throw $pizzasFile->invalid($line, "the price {$row['price']} is not an amount.");
@@ -204,11 +243,23 @@ class SalesDataImporter
     private function importOrders(CsvFile $ordersFile): array
     {
         $orders = [];
+        $lineByOrderId = [];
 
         foreach ($ordersFile->rows() as $line => $row) {
             if (! ctype_digit($row['order_id'])) {
                 throw $ordersFile->invalid($line, "the order id {$row['order_id']} is not a whole number.");
             }
+
+            $orderId = (int) $row['order_id'];
+
+            if (isset($lineByOrderId[$orderId])) {
+                throw $ordersFile->invalid(
+                    $line,
+                    "the order {$orderId} is already on line {$lineByOrderId[$orderId]}.",
+                );
+            }
+
+            $lineByOrderId[$orderId] = $line;
 
             $dateAndTime = "{$row['date']} {$row['time']}";
             $orderedAt = CarbonImmutable::createFromFormat('!Y-m-d H:i:s', $dateAndTime);
@@ -218,7 +269,7 @@ class SalesDataImporter
                 throw $ordersFile->invalid($line, "{$dateAndTime} is not a date and time.");
             }
 
-            $orders[] = ['id' => (int) $row['order_id'], 'ordered_at' => $orderedAt->format('Y-m-d H:i:s')];
+            $orders[] = ['id' => $orderId, 'ordered_at' => $orderedAt->format('Y-m-d H:i:s')];
         }
 
         foreach (array_chunk($orders, self::CHUNK_SIZE) as $chunk) {
@@ -237,6 +288,7 @@ class SalesDataImporter
     private function importOrderItems(CsvFile $orderDetailsFile, array $orderIds, array $pizzaIdByCode): int
     {
         $orderItems = [];
+        $lineByOrderItemId = [];
 
         foreach ($orderDetailsFile->rows() as $line => $row) {
             if (! ctype_digit($row['order_details_id'])) {
@@ -245,6 +297,17 @@ class SalesDataImporter
                     "the order line id {$row['order_details_id']} is not a whole number.",
                 );
             }
+
+            $orderItemId = (int) $row['order_details_id'];
+
+            if (isset($lineByOrderItemId[$orderItemId])) {
+                throw $orderDetailsFile->invalid(
+                    $line,
+                    "the order line {$orderItemId} is already on line {$lineByOrderItemId[$orderItemId]}.",
+                );
+            }
+
+            $lineByOrderItemId[$orderItemId] = $line;
 
             if (! isset($orderIds[(int) $row['order_id']])) {
                 throw $orderDetailsFile->invalid($line, "the order {$row['order_id']} is not in orders.csv.");
@@ -262,7 +325,7 @@ class SalesDataImporter
             }
 
             $orderItems[] = [
-                'id' => (int) $row['order_details_id'],
+                'id' => $orderItemId,
                 'order_id' => (int) $row['order_id'],
                 'pizza_id' => $pizzaId,
                 'quantity' => (int) $row['quantity'],

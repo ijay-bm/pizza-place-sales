@@ -8,6 +8,7 @@ use App\Models\OrderItem;
 use App\Models\PizzaType;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\ApiTestCase;
 
 /**
@@ -151,6 +152,44 @@ class StoreTest extends ApiTestCase
         $this->assertDatabaseCount('pizza_types', 0);
         $this->assertDatabaseCount('orders', 0);
         $this->assertSame(0, Ingredient::query()->count());
+    }
+
+    /**
+     * @return array<string, array{string, string, string}>
+     */
+    public static function repeatedRows(): array
+    {
+        return [
+            'a pizza type' => ['repeated-ids', 'pizza_types', 'Line 12: the pizza type thai_ckn is already on line 2.'],
+            'an ingredient of one pizza type' => [
+                'repeated-ingredient',
+                'pizza_types',
+                'Line 2: the ingredient Pineapple is listed twice.',
+            ],
+            'a pizza' => ['repeated-ids', 'pizzas', 'Line 32: the pizza thai_ckn_s is already on line 2.'],
+            'a pizza type in one size' => [
+                'repeated-size',
+                'pizzas',
+                'Line 32: the pizza type mexicana in size L is already on line 31.',
+            ],
+            'an order' => ['repeated-ids', 'orders', 'Line 6: the order 1 is already on line 2.'],
+            'an order line' => ['repeated-ids', 'order_details', 'Line 12: the order line 1 is already on line 2.'],
+        ];
+    }
+
+    #[DataProvider('repeatedRows')]
+    public function test_a_file_repeating_a_row_is_refused_and_nothing_is_written(
+        string $case,
+        string $file,
+        string $message,
+    ): void {
+        $this->signIn()
+            ->postJson(self::URI, [$file => $this->fixture($case, $file)] + $this->files())
+            ->assertUnprocessable()
+            ->assertOnlyJsonValidationErrors([$file])
+            ->assertJsonPath("errors.{$file}.0", $message);
+
+        $this->assertDatabaseCount('pizza_types', 0);
     }
 
     public function test_a_file_missing_a_column_is_refused_by_name(): void
