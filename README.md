@@ -156,8 +156,9 @@ same request, and files dropped on it go to the slot with their exact name.
   each one at once.
 - **One transaction**, in the order the files refer to each other: pizza types
   and their ingredients, pizzas, orders, order lines. A row that cannot be read
-  (an unknown pizza, a bad date, a missing field) stops the import with a 422 on
-  that file, naming the line, and nothing is written:
+  (an unknown pizza, a bad date, a missing field, an id the file already
+  holds) stops the import with a 422 on that file, naming the line, and nothing
+  is written:
 
   ```json
   { "message": "Line 3: the pizza bbq_ckn_l is not in pizzas.csv.", "errors": { "order_details": ["Line 3: the pizza bbq_ckn_l is not in pizzas.csv."] } }
