@@ -267,6 +267,7 @@ apps/web                 Vue 3
   src/layouts     the signed-in frame
   src/components  shared form components
   src/stores      the auth store
+  src/utils       formatters for money, dates and names
 docker                   the PHP image, nginx and PHP settings
 ```
 
@@ -276,7 +277,13 @@ docker                   the PHP image, nginx and PHP settings
 docker compose -f docker-compose.local.yml exec -u app php php artisan test
 ```
 
-The tests call the API over HTTP against the `mysql-test` database, the same
+The front end's unit tests run with Vitest:
+
+```bash
+docker compose -f docker-compose.local.yml exec node npm run test:unit
+```
+
+The API's tests call it over HTTP against the `mysql-test` database, the same
 engine the app uses. Each endpoint is tested signed out where it needs a session
 (401), with invalid input where it takes any (422) and on its happy path, with
 numbers checked by hand against small fixtures cut from the dataset; one test

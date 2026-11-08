@@ -4,7 +4,7 @@ import { useRoute } from 'vue-router';
 import { isAxiosError } from 'axios';
 import { fetchOrder } from '@/api/orders';
 import type { Order } from '@/api/orders';
-import { capitalize, formatDateAndTime, formatMoney } from '@/formatting';
+import { capitalize, formatDateAndTime, formatMoney } from '@/utils/formatting';
 import AppButton from '@/components/AppButton.vue';
 import AppLoader from '@/components/AppLoader.vue';
 
