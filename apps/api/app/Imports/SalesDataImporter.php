@@ -20,10 +20,10 @@ class SalesDataImporter
     private const int CHUNK_SIZE = 1000;
 
     /**
-     * Imports the four files in one transaction, in the order their references run, and returns how many rows each
-     * table received. Every file's header is checked first. Rows are matched on the source's identifiers, so
-     * importing the same files again changes nothing. A row that cannot be read stops the import and nothing is
-     * written.
+     * Replaces the sales data with the four files, in one transaction, and returns how many rows each table received.
+     * Every file's header is checked first. The rows already stored are deleted, then the files are inserted in the
+     * order their references run, each row keeping its source id. A row that cannot be read stops the import, and the
+     * data already stored is left as it was.
      *
      * @return array{pizza_types: int, ingredients: int, pizzas: int, orders: int, order_items: int}
      *
@@ -53,8 +53,10 @@ class SalesDataImporter
         $this->checkHeaders($pizzaTypesFile, $pizzasFile, $ordersFile, $orderDetailsFile);
 
         return DB::transaction(function () use ($pizzaTypesFile, $pizzasFile, $ordersFile, $orderDetailsFile): array {
+            $this->deleteSalesData();
+
             $pizzaTypeIdByCode = $this->importPizzaTypes($pizzaTypesFile);
-            $ingredientIdByName = $this->importIngredients($pizzaTypesFile, $pizzaTypeIdByCode);
+            $ingredientIdByName = $this->importIngredients($pizzaTypesFile);
             $pizzaIdByCode = $this->importPizzas($pizzasFile, $pizzaTypeIdByCode);
             $orderIds = $this->importOrders($ordersFile);
             $orderItemCount = $this->importOrderItems($orderDetailsFile, $orderIds, $pizzaIdByCode);
@@ -92,6 +94,19 @@ class SalesDataImporter
     }
 
     /**
+     * Deletes every row of the sales data, the referencing tables first. ingredient_pizza_type is emptied by its
+     * cascade from pizza_types. DELETE and not TRUNCATE, since MySQL commits the open transaction on a TRUNCATE.
+     */
+    private function deleteSalesData(): void
+    {
+        OrderItem::query()->delete();
+        Order::query()->delete();
+        Pizza::query()->delete();
+        PizzaType::query()->delete();
+        Ingredient::query()->delete();
+    }
+
+    /**
      * @return array<string, int> the pizza type ids by code
      */
     private function importPizzaTypes(CsvFile $pizzaTypesFile): array
@@ -109,18 +124,17 @@ class SalesDataImporter
             $pizzaTypes[] = ['code' => $row['pizza_type_id'], 'name' => $row['name'], 'category' => $category->value];
         }
 
-        PizzaType::query()->upsert($pizzaTypes, ['code'], ['name', 'category']);
+        PizzaType::query()->fillAndInsert($pizzaTypes);
 
-        return PizzaType::query()->whereIn('code', array_column($pizzaTypes, 'code'))->pluck('id', 'code')->all();
+        return PizzaType::query()->pluck('id', 'code')->all();
     }
 
     /**
      * Imports the ingredients each pizza type lists in its ingredients field, and links each type to its own.
      *
-     * @param  array<string, int>  $pizzaTypeIdByCode
      * @return array<string, int> the ingredient ids by name
      */
-    private function importIngredients(CsvFile $pizzaTypesFile, array $pizzaTypeIdByCode): array
+    private function importIngredients(CsvFile $pizzaTypesFile): array
     {
         $ingredientNamesByCode = [];
 
@@ -130,20 +144,15 @@ class SalesDataImporter
 
         $ingredientNames = collect($ingredientNamesByCode)->flatten()->unique()->values()->all();
 
-        // upsert() needs a column to update; writing the name over itself makes it insert only the names that are new.
-        Ingredient::query()->upsert(
-            array_map(fn (string $name): array => ['name' => $name], $ingredientNames),
-            ['name'],
-            ['name'],
-        );
-        $ingredientIdByName = Ingredient::query()->whereIn('name', $ingredientNames)->pluck('id', 'name')->all();
+        Ingredient::query()->fillAndInsert(array_map(fn (string $name): array => ['name' => $name], $ingredientNames));
+        $ingredientIdByName = Ingredient::query()->pluck('id', 'name')->all();
 
-        foreach (PizzaType::query()->whereIn('id', $pizzaTypeIdByCode)->get() as $pizzaType) {
+        foreach (PizzaType::query()->get() as $pizzaType) {
             $ingredientIds = array_map(
                 fn (string $name): int => $ingredientIdByName[$name],
                 $ingredientNamesByCode[$pizzaType->code],
             );
-            $pizzaType->ingredients()->sync($ingredientIds);
+            $pizzaType->ingredients()->attach($ingredientIds);
         }
 
         return $ingredientIdByName;
@@ -182,9 +191,9 @@ class SalesDataImporter
             ];
         }
 
-        Pizza::query()->upsert($pizzas, ['code'], ['pizza_type_id', 'size', 'price']);
+        Pizza::query()->fillAndInsert($pizzas);
 
-        return Pizza::query()->whereIn('code', array_column($pizzas, 'code'))->pluck('id', 'code')->all();
+        return Pizza::query()->pluck('id', 'code')->all();
     }
 
     /**
@@ -213,7 +222,7 @@ class SalesDataImporter
         }
 
         foreach (array_chunk($orders, self::CHUNK_SIZE) as $chunk) {
-            Order::query()->upsert($chunk, ['id'], ['ordered_at']);
+            Order::query()->fillAndInsert($chunk);
         }
 
         return array_fill_keys(array_column($orders, 'id'), true);
@@ -261,7 +270,7 @@ class SalesDataImporter
         }
 
         foreach (array_chunk($orderItems, self::CHUNK_SIZE) as $chunk) {
-            OrderItem::query()->upsert($chunk, ['id'], ['order_id', 'pizza_id', 'quantity']);
+            OrderItem::query()->fillAndInsert($chunk);
         }
 
         return count($orderItems);
