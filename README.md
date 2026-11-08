@@ -199,7 +199,7 @@ signed in: its requests carry the same session.
 | `POST imports` | the rows each table received |
 | `GET orders` | a page of orders with `pizza_count` and `total` |
 | `GET orders/{orderId}` | one order with its totals |
-| `GET pizza-types` | the pizza types with their sizes and prices, for the dashboard's filter lists |
+| `GET pizza-types` | the pizza types with their sizes, prices and ingredients, for the menu and the dashboard's filter lists |
 | `GET statistics/summary` | revenue, orders, pizzas sold, the average order value and pizzas per order |
 | `GET statistics/revenue-by-month` | every month from the first to the last in the range, with its revenue and orders; zeros for a month that sold nothing |
 | `GET statistics/orders-by-hour` | the orders placed in each hour of the day |

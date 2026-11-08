@@ -21,6 +21,7 @@ class PizzaTypeResource extends JsonResource
             'name' => $this->name,
             'category' => $this->category,
             'pizzas' => PizzaResource::collection($this->whenLoaded('pizzas')),
+            'ingredients' => $this->whenLoaded('ingredients', fn () => $this->ingredients->pluck('name')),
         ];
     }
 }

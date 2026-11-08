@@ -25,4 +25,23 @@ class IndexTest extends ApiTestCase
             ->assertJsonPath('data.0.category', 'supreme')
             ->assertJsonPath('data.0.pizzas.*.size', ['S', 'M', 'L']);
     }
+
+    public function test_each_pizza_type_comes_with_its_ingredients_by_name(): void
+    {
+        $this->importSalesFixtures();
+
+        $this->actingAs(User::factory()->create(), 'web')
+            ->fromTheSpa()
+            ->getJson('/api/v1/pizza-types')
+            ->assertOk()
+            ->assertJsonPath('data.0.code', 'calabrese')
+            ->assertJsonPath('data.0.ingredients', [
+                "\u{2018}Nduja Salami",
+                'Friggitello Peppers',
+                'Garlic',
+                'Pancetta',
+                'Red Onions',
+                'Tomatoes',
+            ]);
+    }
 }
