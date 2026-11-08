@@ -2,8 +2,8 @@
 
 A REST API and a dashboard over a year of orders from a fictitious pizza place.
 Laravel imports the dataset's four CSV files and serves them as JSON; a Vue 3
-dashboard, behind a login, lists, searches and filters the orders through that
-API. The whole stack runs in Docker.
+dashboard, behind a login, charts the sales and lists, searches and filters the
+orders through that API. The whole stack runs in Docker.
 
 - [Running it locally](#running-it-locally)
 - [What it does](#what-it-does)
@@ -67,6 +67,7 @@ production configuration can sit beside it without changing it.
 | Feature | Where |
 |---|---|
 | Log in and out | `/login`, `POST /api/v1/auth/login` |
+| See revenue, orders, pizzas sold and the average order, with charts by month, category, hour and weekday, and the best and worst sellers, for any date range | the Dashboard, `GET /api/v1/statistics/*` |
 | Import the dataset's four CSV files | the Import page, or `POST /api/v1/imports` |
 | List orders with their totals, newest first, 25 to a page | the Orders page, `GET /api/v1/orders` |
 | Search by order number, pizza name or ingredient | the Search box, `filter[search]` |
@@ -199,6 +200,12 @@ signed in: its requests carry the same session.
 | `GET orders` | a page of orders with `pizza_count` and `total` |
 | `GET orders/{orderId}` | one order with its totals |
 | `GET pizza-types` | the pizza types with their sizes and prices, for the dashboard's filter lists |
+| `GET statistics/summary` | revenue, orders, pizzas sold, the average order value and pizzas per order |
+| `GET statistics/revenue-by-month` | every month from the first to the last in the range, with its revenue and orders; zeros for a month that sold nothing |
+| `GET statistics/orders-by-hour` | the orders placed in each hour of the day |
+| `GET statistics/orders-by-weekday` | the orders placed on each day of the week, `1` for Monday to `7` for Sunday |
+| `GET statistics/pizza-type-sales` | every pizza type with the pizzas it sold and its revenue, the best-selling first; a type that sold nothing is listed with zeros |
+| `GET statistics/category-sales` | each category with the pizzas it sold and its revenue |
 
 `GET orders` reads `filter[ordered_from]`, `filter[ordered_to]` (dates),
 `filter[category]`, `filter[size]`, `filter[pizza_type]` (a code) and
@@ -206,6 +213,11 @@ signed in: its requests carry the same session.
 `per_page` (up to 100) and `page`. Both order routes take
 `include=orderItems.pizza.pizzaType` for each order's lines. An unknown filter,
 sort or include is a 400, an invalid value a 422 on its field.
+
+Every `statistics/*` route takes `filter[ordered_from]` and `filter[ordered_to]`,
+both optional and both included; any other filter is a 422. Hours and weekdays
+are summed across every year in the range, since they answer when the shop is
+busy.
 
 The pizza filters describe one pizza: `filter[size]=L&filter[category]=classic`
 finds orders holding a large classic pizza, not any large pizza beside any
@@ -235,8 +247,13 @@ Money is returned as decimal strings, not floats.
 ## The dashboard
 
 A Vue 3 single-page application in `apps/web`: TypeScript, Vue Router, Pinia,
-Tailwind CSS 4 and axios, served by Vite in development.
+Tailwind CSS 4, axios and Chart.js, served by Vite in development.
 
+- **Dashboard** shows revenue, orders, pizzas sold and the average order, bar
+  charts of revenue by month and by category and of orders by hour and by day of
+  the week, and the five best and worst sellers. A date range narrows every
+  figure and lives in the address; months carry their year once the range spans
+  more than one. Charts are Chart.js through vue-chartjs.
 - **Orders** lists the orders with their date, total, pizzas and count. The
   search, the filters, the sort and the page live in the address, so a search
   can be bookmarked or shared and survives a reload; the search waits for typing
@@ -256,7 +273,7 @@ apps/api                 Laravel 13
   app/Http/Requests/Api/V1      validation of every request
   app/Http/Resources/Api/V1     the JSON every endpoint returns
   app/Imports                   SalesDataImporter, CsvFile
-  app/Queries                   OrderQuery: the orders' filters, sorts and includes
+  app/Queries                   OrderQuery (the orders' filters, sorts and includes), SalesStatistics
   app/Models, app/Enums
   database/seeders/Local        the demo seeder and the dataset it imports
   tests/Feature                 one test class per controller method
@@ -265,7 +282,7 @@ apps/web                 Vue 3
   src/api         the axios client and one module per resource
   src/views       one component per route
   src/layouts     the signed-in frame
-  src/components  shared form components
+  src/components  shared form components and the bar chart
   src/stores      the auth store
   src/utils       formatters for money, dates and names
 docker                   the PHP image, nginx and PHP settings
@@ -331,8 +348,8 @@ and `vendor/bin/pint --test` for the PHP.
   image.
 
 Libraries beyond Laravel and Vue: `spatie/laravel-query-builder` for `filter`,
-`sort` and `include`, Scramble for the API documentation, and Tailwind CSS
-without a component library.
+`sort` and `include`, Scramble for the API documentation, Chart.js through
+`vue-chartjs`, and Tailwind CSS without a component library.
 
 Work is committed on `develop`, the only long-lived branch. Each feature was
 built on its own `feature/*` branch and merged with `--no-ff`.
