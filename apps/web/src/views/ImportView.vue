@@ -64,8 +64,8 @@ async function submit(): Promise<void> {
   <div class="max-w-2xl">
     <h1 class="text-2xl font-semibold tracking-tight">Import sales data</h1>
     <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-      Choose or drop the dataset's four CSV files. They are imported together; a file the server
-      cannot read stops the import, and nothing is saved.
+      Choose or drop the dataset's four CSV files. They replace the sales data already stored; a
+      file the server cannot read stops the import, and the stored data is kept.
     </p>
 
     <form
@@ -85,7 +85,7 @@ async function submit(): Promise<void> {
       </Transition>
 
       <AppButton type="submit" :busy="isImporting" :disabled="!hasEveryFile">
-        {{ isImporting ? 'Importing…' : 'Import' }}
+        {{ isImporting ? 'Importing…' : 'Import and replace' }}
       </AppButton>
     </form>
 
