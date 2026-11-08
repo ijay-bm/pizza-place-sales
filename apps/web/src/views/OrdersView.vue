@@ -6,7 +6,7 @@ import { refDebounced } from '@vueuse/core';
 import { isCancel } from 'axios';
 import { fetchOrders, fetchPizzaTypes } from '@/api/orders';
 import type { Order, OrderFilters, Page, PizzaType } from '@/api/orders';
-import { capitalize, formatDateAndTime, formatMoney, shortPizzaName } from '@/formatting';
+import { capitalize, formatDateAndTime, formatMoney, shortPizzaName } from '@/utils/formatting';
 import AppButton from '@/components/AppButton.vue';
 import AppLoader from '@/components/AppLoader.vue';
 import FormField from '@/components/FormField.vue';

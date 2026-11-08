@@ -267,6 +267,7 @@ apps/web                 Vue 3
   src/layouts     the signed-in frame
   src/components  shared form components
   src/stores      the auth store
+  src/utils       formatters for money, dates and names
 docker                   the PHP image, nginx and PHP settings
 ```
 
