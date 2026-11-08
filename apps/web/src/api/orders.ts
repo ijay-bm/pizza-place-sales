@@ -5,6 +5,7 @@ export interface PizzaType {
   name: string;
   category: string;
   pizzas?: Pizza[];
+  ingredients?: string[];
 }
 
 export interface Pizza {

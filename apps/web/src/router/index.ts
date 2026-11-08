@@ -39,6 +39,11 @@ const router = createRouter({
           component: () => import('@/views/OrderView.vue')
         },
         {
+          path: 'menu',
+          name: 'pizza-types.index',
+          component: () => import('@/views/MenuView.vue')
+        },
+        {
           path: 'import',
           name: 'imports.create',
           component: () => import('@/views/ImportView.vue')

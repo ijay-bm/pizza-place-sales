@@ -252,7 +252,7 @@ const summaryTiles = computed(() => {
             <table class="mt-3 w-full text-sm">
               <thead class="text-left text-zinc-500 dark:text-zinc-400">
                 <tr>
-                  <th scope="col" class="py-2 font-medium">Pizza</th>
+                  <th scope="col" class="py-2 font-medium">Pizza type</th>
                   <th scope="col" class="py-2 font-medium">Category</th>
                   <th scope="col" class="py-2 text-right font-medium">Sold</th>
                   <th scope="col" class="py-2 text-right font-medium">Revenue</th>

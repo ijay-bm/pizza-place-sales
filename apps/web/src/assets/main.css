@@ -20,6 +20,13 @@
   }
 }
 
+/* A link inside content: the accent color with a faint underline that fills in on hover, so it reads as a link at rest. */
+@layer components {
+  .link {
+    @apply rounded text-orange-600 underline decoration-orange-600/30 underline-offset-4 transition-colors duration-150 hover:decoration-orange-600 focus-visible:ring-4 focus-visible:ring-orange-500/30 focus-visible:outline-none dark:text-orange-400 dark:decoration-orange-400/30 dark:hover:decoration-orange-400;
+  }
+}
+
 /* Vue's <Transition name="fade">, between routes. */
 .fade-enter-active,
 .fade-leave-active {
