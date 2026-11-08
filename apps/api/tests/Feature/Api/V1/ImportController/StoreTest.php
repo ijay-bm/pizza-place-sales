@@ -80,7 +80,7 @@ class StoreTest extends ApiTestCase
         );
     }
 
-    public function test_importing_the_same_files_again_changes_nothing(): void
+    public function test_importing_the_same_files_again_leaves_the_same_rows(): void
     {
         $this->signIn()->postJson(self::URI, $this->files())->assertOk();
         $this->postJson(self::URI, $this->files())->assertOk();
@@ -91,6 +91,33 @@ class StoreTest extends ApiTestCase
             'ingredient_pizza_type',
             PizzaType::query()->withCount('ingredients')->get()->sum('ingredients_count'),
         );
+        $this->assertDatabaseCount('orders', 4);
+        $this->assertDatabaseCount('order_items', 10);
+    }
+
+    public function test_a_later_import_replaces_the_data_already_there(): void
+    {
+        $this->signIn()->postJson(self::URI, $this->files())->assertOk();
+        $this->postJson(
+            self::URI,
+            [
+                'orders' => $this->fixture('fewer-orders', 'orders'),
+                'order_details' => $this->fixture('fewer-orders', 'order_details'),
+            ] + $this->files(),
+        )->assertOk();
+
+        $this->assertSame([1, 2], Order::query()->orderBy('id')->pluck('id')->all());
+        $this->assertSame([1, 2, 3, 4, 5, 6], OrderItem::query()->orderBy('id')->pluck('id')->all());
+    }
+
+    public function test_a_refused_import_keeps_the_data_already_there(): void
+    {
+        $this->signIn()->postJson(self::URI, $this->files())->assertOk();
+        $this->postJson(
+            self::URI,
+            ['order_details' => $this->fixture('unknown-pizza', 'order_details')] + $this->files(),
+        )->assertUnprocessable();
+
         $this->assertDatabaseCount('orders', 4);
         $this->assertDatabaseCount('order_items', 10);
     }

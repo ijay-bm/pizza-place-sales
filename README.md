@@ -132,7 +132,7 @@ schema follows them, and changes them where the files fall short:
 |---|---|---|
 | a pizza type's ingredients in one comma-separated text field | an `ingredients` table and the `ingredient_pizza_type` pivot | the one place the source holds a list in a field; as rows, "which pizzas use mushrooms" is an ordinary query, and an ingredient is searchable |
 | `date` and `time` as two strings | one `ordered_at`, a `DATETIME`, indexed | one sortable, filterable moment; date ranges use the index |
-| `order_id`, `order_details_id` | kept as the primary keys of `orders` and `order_items` | importing the same files again finds the same rows instead of adding copies, and `order_items.order_id` needs no translation |
+| `order_id`, `order_details_id` | kept as the primary keys of `orders` and `order_items` | an order keeps its number from one import to the next, and `order_items.order_id` needs no translation |
 | `pizza_type_id`, `pizza_id` as text | numeric `id`s, with the text kept as a unique `code` | Laravel's usual keys for relations, while the codes still identify the rows on a re-import |
 | `category` and `size` as free text | strings cast to the PHP enums `PizzaCategory` and `PizzaSize`, checked by the import | a value outside the list never gets in; a change to the list is a code change, not a migration |
 | relations implied by matching values | foreign keys, and a unique (`pizza_type_id`, `size`) on `pizzas` | the database refuses a line for a pizza that does not exist, or two prices for one size |
@@ -163,13 +163,15 @@ same request, and files dropped on it go to the slot with their exact name.
   { "message": "Line 3: the pizza bbq_ckn_l is not in pizzas.csv.", "errors": { "order_details": ["Line 3: the pizza bbq_ckn_l is not in pizzas.csv."] } }
   ```
 
-- **Rows are upserted on the source's identifiers**, so importing the same files
-  again changes nothing; a later import adds and updates rows and deletes none.
+- **An import replaces the sales data.** Inside the same transaction the rows
+  already stored are deleted, then the files are inserted with their source ids,
+  so importing the same files again leaves the same rows, and a refused import
+  leaves the stored data as it was.
 - **`pizza_types.csv` is saved in Windows-1252**, not UTF-8: its Calabrese
   pizza lists `‘Nduja Salami` with a curly quote. A field that is not valid UTF-8
   is converted before it is stored.
-- **The full dataset imports in about a second and a half.** Rows are read one at
-  a time and written a thousand at a time.
+- **The full dataset imports in about three seconds.** Rows are read one at a
+  time and written a thousand at a time.
 
 The demo seeder imports the committed files through the same importer.
 `*.csv -text` in `apps/api/.gitattributes` keeps git from changing their CRLF
@@ -326,13 +328,13 @@ and `vendor/bin/pint --test` for the PHP.
 ## Decisions and trade-offs
 
 - **The import runs inside the request, not in a queue.** The full dataset takes
-  about a second and a half, and the response carries the row counts or the
-  errors directly. Each file is capped at 10 MB; much bigger files would need a
-  queued job and a status to poll.
-- **All four files in one request, in one transaction.** The references between
-  the files are checked together, and a bad row writes nothing. One file can't
-  be imported on its own, and a later import adds and updates rows but never
-  deletes any.
+  about three seconds, and the response carries the row counts or the errors
+  directly. Each file is capped at 10 MB; much bigger files would need a queued
+  job and a status to poll.
+- **An import replaces everything.** All four files are required, so every
+  import is a whole dataset: the old rows are deleted and the new ones inserted
+  in one transaction, and a bad row leaves the old data untouched. The catch is
+  that a second year can't be added on top of the first.
 - **No price on the order lines.** The dataset has one price per pizza for the
   whole year, so revenue is `quantity × pizzas.price`. If the app took orders
   while prices changed, each line would need its own price.

@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('order_items', function (Blueprint $table) {
-            // Holds the source's order_details_id, so a second import updates the same rows.
+            // Holds the source's order_details_id, so an order line keeps its number from one import to the next.
             $table->id();
             $table->foreignId('order_id')->constrained()->cascadeOnDelete();
             $table->foreignId('pizza_id')->constrained();
