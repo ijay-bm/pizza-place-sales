@@ -85,7 +85,21 @@ watch(
           </thead>
           <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800">
             <tr v-for="orderItem in order.order_items ?? []" :key="orderItem.id">
-              <td class="px-4 py-3 font-medium">{{ orderItem.pizza?.pizza_type?.name }}</td>
+              <td class="px-4 py-3 font-medium">
+                <RouterLink
+                  v-if="orderItem.pizza?.pizza_type"
+                  :to="{
+                    name: 'pizza-types.index',
+                    query: {
+                      pizza_type: orderItem.pizza.pizza_type.code,
+                      size: orderItem.pizza.size
+                    }
+                  }"
+                  class="link"
+                >
+                  {{ orderItem.pizza.pizza_type.name }}
+                </RouterLink>
+              </td>
               <td class="px-4 py-3 text-zinc-600 dark:text-zinc-300">
                 {{ capitalize(orderItem.pizza?.pizza_type?.category ?? '') }}
               </td>

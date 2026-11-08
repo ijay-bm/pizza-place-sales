@@ -70,10 +70,11 @@ production configuration can sit beside it without changing it.
 | See revenue, orders, pizzas sold and the average order, with charts by month, category, hour and weekday, and the best and worst sellers, for any date range | the Dashboard, `GET /api/v1/statistics/*` |
 | Import the dataset's four CSV files | the Import page, or `POST /api/v1/imports` |
 | List orders with their totals, newest first, 25 to a page | the Orders page, `GET /api/v1/orders` |
-| Search by order number, pizza name or ingredient | the Search box, `filter[search]` |
-| Filter by date range, category, size and pizza | the filters above the table, `filter[...]` |
+| Search by order number, pizza type or ingredient | the Search box, `filter[search]` |
+| Filter by date range, category, size and pizza type | the filters above the table, `filter[...]` |
 | Sort by order number, date or total | the column headers, `sort` |
-| Open an order with its pizzas and amounts | `/orders/{id}`, `GET /api/v1/orders/{id}` |
+| Open an order with its pizzas and amounts, each linking to its pizza type | `/orders/{id}`, `GET /api/v1/orders/{id}` |
+| Browse the 32 pizza types with their sizes, prices and ingredients, searched by name or ingredient | the Menu page, `GET /api/v1/pizza-types` |
 | Read and try the API | <http://localhost:8080/docs/api> |
 
 ## The data and the schema
@@ -199,7 +200,7 @@ signed in: its requests carry the same session.
 | `POST imports` | the rows each table received |
 | `GET orders` | a page of orders with `pizza_count` and `total` |
 | `GET orders/{orderId}` | one order with its totals |
-| `GET pizza-types` | the pizza types with their sizes and prices, for the dashboard's filter lists |
+| `GET pizza-types` | the pizza types with their sizes, prices and ingredients, for the menu and the dashboard's filter lists |
 | `GET statistics/summary` | revenue, orders, pizzas sold, the average order value and pizzas per order |
 | `GET statistics/revenue-by-month` | every month from the first to the last in the range, with its revenue and orders; zeros for a month that sold nothing |
 | `GET statistics/orders-by-hour` | the orders placed in each hour of the day |
@@ -258,7 +259,11 @@ Tailwind CSS 4, axios and Chart.js, served by Vite in development.
   search, the filters, the sort and the page live in the address, so a search
   can be bookmarked or shared and survives a reload; the search waits for typing
   to stop, and a newer request cancels an older one.
-- **An order** lists its pizzas with category, size, price, quantity and amount.
+- **An order** lists its pizzas with category, size, price, quantity and amount;
+  each pizza links to its type on the menu, with the size bought highlighted.
+- **Menu** lists the pizza types by category with their sizes, prices and
+  ingredients, narrowed as you type a name or an ingredient. Each type links to
+  the orders that hold it.
 - **Import** takes the four files, chosen or dropped, and lists the rows each
   table received, or each file's error under its slot.
 - Login guards every page: the router asks `GET auth/user` once per page load,

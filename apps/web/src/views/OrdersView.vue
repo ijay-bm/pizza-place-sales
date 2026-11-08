@@ -210,7 +210,7 @@ function pizzasOf(order: Order): string {
             id="search"
             v-model="searchInput"
             type="search"
-            placeholder="Order number, pizza or ingredient"
+            placeholder="Order number, pizza type or ingredient"
           />
         </FormField>
       </div>
@@ -249,12 +249,12 @@ function pizzasOf(order: Order): string {
         />
       </FormField>
       <div class="sm:col-span-2 lg:col-span-5">
-        <FormField label="Pizza" input-id="pizza-type">
+        <FormField label="Pizza type" input-id="pizza-type">
           <SelectInput
             id="pizza-type"
             :model-value="listQuery.pizzaType"
             :options="pizzaTypeOptions"
-            placeholder="All pizzas"
+            placeholder="All pizza types"
             @update:model-value="updateQuery({ pizza_type: $event })"
           />
         </FormField>
@@ -327,7 +327,7 @@ function pizzasOf(order: Order): string {
               <td class="px-4 py-3 font-medium">
                 <RouterLink
                   :to="{ name: 'orders.show', params: { orderId: order.id } }"
-                  class="hover:text-orange-600 dark:hover:text-orange-400"
+                  class="link"
                   @click.stop
                 >
                   #{{ order.id }}

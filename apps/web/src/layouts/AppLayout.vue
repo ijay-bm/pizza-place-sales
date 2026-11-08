@@ -12,6 +12,7 @@ const isLoggingOut = ref(false);
 const NAVIGATION_LINKS = [
   { name: 'dashboard', label: 'Dashboard' },
   { name: 'orders.index', label: 'Orders' },
+  { name: 'pizza-types.index', label: 'Menu' },
   { name: 'imports.create', label: 'Import' }
 ] as const;
 
